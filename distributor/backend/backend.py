@@ -52,11 +52,15 @@ class Backend:
 	def stop(self):
 		self._zk.stop()
 
-
 	def top_phrases_for_prefix(self, prefix):
 		if (not self._active):
 			raise NodeInactiveError("This backend node is not active. Consult zookeeper for the most recent active nodes")
 		return self._trie.top_phrases_for_prefix(prefix)
+
+	def count_top_phrases_for_prefix(self, prefix):
+		if (not self._active):
+			raise NodeInactiveError("This backend node is not active. Consult zookeeper for the most recent active nodes")
+		return self._trie.count_top_phrases_for_prefix(prefix)
 
 	def _on_next_target_changed(self, data, stat, event=None):
 		self._logger.info("_on_next_target_changed Data is %s" % data)

@@ -43,3 +43,15 @@ class Trie:
             node = node.childs[c]
 
         return [top_phrase.value for top_phrase in node.top_phrases]
+    
+    def count_top_phrases_for_prefix(self, prefix):
+        prefix = prefix.lower()
+        node = self._root
+        for c in prefix:
+            if (c not in node.childs):
+                return []
+            node = node.childs[c]
+
+        #count = len(node.top_phrases)
+        #return count
+        return [top_phrase.value for top_phrase in node.top_phrases]

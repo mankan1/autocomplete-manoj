@@ -28,6 +28,18 @@ class Frontend:
 	def stop(self):
 		self._zk.stop()		
 
+	def get_prefix_occurrences(self, prefix):
+		backend_hostname = self._random_backend_for_prefix(prefix)
+		if (backend_hostname is None):
+			raise BackendNodesNotAvailable("No backend nodes available to complete the request")
+		self._logger.debug(f'Getting prefix count from host {backend_hostname}')
+
+		r = requests.get(f'http://{backend_hostname}:8001/count-top-phrases', params = {'prefix': prefix})
+		self._logger.debug(f'request content: {r.content}; r.json(): {r.json()}')
+		count_top_phrases = r.json()["data"]["count-top-phrases"]
+
+		return count_top_phrases
+	
 	# Using Cache Aside Pattern
 	def top_phrases_for_prefix(self, prefix):
 		top_phrases_from_distributed_cache = self._top_phrases_for_prefix_distributed_cache(prefix)

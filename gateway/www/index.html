@@ -21,6 +21,7 @@
 		<div>
 			<form id="searchForm" action="#">
 				<input id="searchInput" class="awesomplete" style="width: 350px">
+				<input id="countsearchInput" class="awesomplete" style="width: 350px">
 				<button type="submit">Submit Search</button>
 			</form>
 		</div>
@@ -33,10 +34,13 @@
 	<script>
 	const init = () => {
 		const input = document.getElementById("searchInput");
+		const countinput = document.getElementById("countsearchInput");
 		const form = document.getElementById("searchForm");
 		const status = document.getElementById("status");
 		const awesomplete = new Awesomplete( input, { tabSelect: true, minChars: 1 , sort: false} );
+		const countawesomplete = new Awesomplete( countinput, { tabSelect: true, minChars: 1 , sort: false} );
 		var previousInput = "";
+		var countpreviousInput = "";
 
 		function formatCurrentDate() {
 			let date = new Date()
@@ -65,7 +69,33 @@
 			ajax.send();
 			previousInput = input.value
 		}
-		
+
+		function countfetchTopPhrases() {
+			if (countinput.value == countpreviousInput) {
+				return
+			}
+
+			const ajax = new XMLHttpRequest();
+			ajax.onload = () => {
+				let list = [];
+				if ( 200 === ajax.status ) {
+					resposeBody = JSON.parse(ajax.responseText)
+
+					console.log('Successful AJAX call. Response Body:', resposeBody);
+
+					countPhrases = resposeBody.data.count_top_phrases
+					countawesomplete.list = countPhrases
+					status.innerHTML = `[${formatCurrentDate()}] Succesfulluy fetched count phrases: ${countPhrases}`;
+				} else {
+					status.innerHTML = `[${formatCurrentDate()}] The count backend is not ready yet. If you just ran the <i>do_mapreduce_tasks</i>, please wait about a minute for the <i>trie-backend-applier</i> to kick in. Refer to the README in this repository for more information.<br> Details: ${ajax.responseText}`;
+				}
+			};
+			const endpointURL = 'http://localhost/count-top-phrases?prefix=' + countinput.value;
+			ajax.open( 'GET', endpointURL, true );
+			ajax.send();
+			countpreviousInput = countinput.value
+		}
+
 		form.addEventListener('submit', function(e){
 			let searchedPhrase = input.value;
 
@@ -80,6 +110,7 @@
 		});
 
 		input.addEventListener('keyup', fetchTopPhrases );
+		countinput.addEventListener('keyup', countfetchTopPhrases );
 	};
 	init();
 	</script> 
